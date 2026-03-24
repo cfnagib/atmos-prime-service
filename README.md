@@ -10,7 +10,7 @@ A microservice that generates prime numbers within a given range and logs each e
 
 ## Tech Stack
 
-- Python 3.14
+- Python 3.13
 - FastAPI
 - PostgreSQL 16
 - SQLAlchemy

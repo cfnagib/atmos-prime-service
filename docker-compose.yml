@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16
+    container_name: atmos-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: atmos
+      POSTGRES_PASSWORD: atmospass
+      POSTGRES_DB: primesdb
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atmos -d primesdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: atmos-app
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://atmos:atmospass@db:5432/primesdb
+    restart: always
