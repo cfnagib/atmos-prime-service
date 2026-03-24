@@ -1,13 +1,12 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from datetime import datetime, timezone
-from app.database import Base
+from sqlalchemy import Column, Integer, DateTime
+from datetime import datetime
+from .database import Base
 
-
-class ExecutionLog(Base):
-    __tablename__ = "execution_logs"
+class PrimeExecution(Base):
+    __tablename__ = "prime_executions"
 
     id = Column(Integer, primary_key=True, index=True)
-    start = Column(Integer, nullable=False)
-    end = Column(Integer, nullable=False)
-    result = Column(String, nullable=False)
-    executed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    range_start = Column(Integer)
+    range_end = Column(Integer)
+    primes_count = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)

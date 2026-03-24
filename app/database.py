@@ -1,25 +1,14 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from pydantic_settings import BaseSettings
+import os
+from sqlalchemy import create_url, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://atmos:atmospass@db:5432/primesdb")
 
-class Settings(BaseSettings):
-    DATABASE_URL: str
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    class Config:
-        env_file = ".env"
-
-
-settings = Settings()
-
-engine = create_engine(settings.DATABASE_URL.replace("postgresql://", "postgresql+psycopg://"))
-
-SessionLocal = sessionmaker(bind=engine)
-
-
-class Base(DeclarativeBase):
-    pass
-
+Base = declarative_base()
 
 def get_db():
     db = SessionLocal()

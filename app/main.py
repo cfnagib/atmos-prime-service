@@ -1,44 +1,42 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import Base, engine, get_db
-from app.models import ExecutionLog
-from app.prime import get_primes
+from typing import List
+from pydantic import BaseModel
 
-Base.metadata.create_all(bind=engine)
+from . import models, prime, database
 
 app = FastAPI(title="Atmos Prime Service")
 
+# Create database tables
+models.Base.metadata.create_all(bind=database.engine)
 
-@app.get("/primes")
-def primes(start: int, end: int, db: Session = Depends(get_db)):
-    if start < 0 or end < 0:
-        raise HTTPException(status_code=400, detail="Range values must be non-negative")
-    if start > end:
-        raise HTTPException(status_code=400, detail="start must be less than or equal to end")
+class PrimeRequest(BaseModel):
+    start: int
+    end: int
 
-    result = get_primes(start, end)
-
-    log = ExecutionLog(
-        start=start,
-        end=end,
-        result=",".join(map(str, result))
+@app.post("/primes")
+def calculate_primes(request: PrimeRequest, db: Session = Depends(database.get_db)):
+    if request.start < 0 or request.end < 0:
+        raise HTTPException(status_code=400, detail="Range values must be positive integers")
+        
+    primes_list = prime.get_primes(request.start, request.end)
+    
+    # Log execution to DB
+    db_execution = models.PrimeExecution(
+        range_start=request.start,
+        range_end=request.end,
+        primes_count=len(primes_list)
     )
-    db.add(log)
+    db.add(db_execution)
     db.commit()
-
-    return {"start": start, "end": end, "primes": result, "count": len(result)}
-
+    
+    return {
+        "range": [request.start, request.end],
+        "count": len(primes_list),
+        "primes": primes_list
+    }
 
 @app.get("/history")
-def history(db: Session = Depends(get_db)):
-    logs = db.query(ExecutionLog).order_by(ExecutionLog.executed_at.desc()).all()
-    return [
-        {
-            "id": log.id,
-            "start": log.start,
-            "end": log.end,
-            "primes": log.result,
-            "executed_at": log.executed_at
-        }
-        for log in logs
-    ]
+def get_history(db: Session = Depends(database.get_db)):
+    history = db.query(models.PrimeExecution).all()
+    return history
