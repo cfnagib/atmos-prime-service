@@ -24,5 +24,5 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://atmos:atmospass@db:5432/primesdb
+      - DATABASE_URL=postgresql+psycopg://atmos:atmospass@db:5432/primesdb
     restart: always
