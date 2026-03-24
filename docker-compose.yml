@@ -1,3 +1,4 @@
+cat <<EOF > docker-compose.yml
 services:
   db:
     image: postgres:16
@@ -26,3 +27,4 @@ services:
     environment:
       - DATABASE_URL=postgresql://atmos:atmospass@db:5432/primesdb
     restart: always
+EOF
