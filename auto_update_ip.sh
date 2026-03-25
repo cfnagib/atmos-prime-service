@@ -4,11 +4,11 @@
 HOST_IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1)
 
 if [ -z "$HOST_IP" ]; then
-    echo "❌ Error: Host IP not detected. Please check your WiFi."
+    echo "Error: Host IP not detected. Please check your WiFi."
     exit 1
 fi
 
-echo "✅ Current Host IP: $HOST_IP"
+echo "Current Host IP: $HOST_IP"
 
 # 2. Build docker-compose.yml
 cat << EOF > docker-compose.yml
@@ -69,7 +69,7 @@ rm -rf ./config
 # 4. Start Deployment
 docker compose up -d --build
 
-echo "⏳ Initializing stack with Legacy WireGuard (40s)..."
+echo "Initializing stack with Legacy WireGuard (40s)..."
 # Increased sleep slightly to ensure the older image stabilizes
 sleep 40
 
@@ -80,7 +80,7 @@ curl -s -X POST http://localhost:8000/primes \
 
 clear
 echo "------------------------------------------------"
-echo "🚀 SYSTEM DEPLOYED WITH STABILITY PATCH"
+echo "SYSTEM DEPLOYED WITH STABILITY PATCH"
 echo "------------------------------------------------"
 echo "Primary VPN URL: http://10.13.13.1:8000/history"
 echo "Alternative URL: http://$HOST_IP:8000/history"

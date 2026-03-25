@@ -2,7 +2,7 @@
 
 # 1. Detect the current Network IP
 HOST_IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1)
-echo "🎯 Detected IP: $HOST_IP"
+echo "Detected IP: $HOST_IP"
 
 # 2. Cleanup old containers and configurations
 docker compose down --volumes --remove-orphans
@@ -61,7 +61,7 @@ EOL
 
 # 4. Start the stack
 docker compose up -d --build
-echo "⏳ Waiting 30s for services to stabilize..."
+echo "Waiting 30s for services to stabilize..."
 sleep 30
 
 # 5. Inject Initial Data to avoid empty history []
@@ -69,7 +69,7 @@ curl -s -X POST http://localhost:8000/primes -H 'Content-Type: application/json'
 
 clear
 echo "------------------------------------------------"
-echo "✅ SUCCESS! PROJECT IS LIVE"
+echo "SUCCESS! PROJECT IS LIVE"
 echo "URL: http://10.13.13.1:8000/history"
 echo "------------------------------------------------"
 

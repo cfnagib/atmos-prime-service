@@ -3,13 +3,13 @@
 HOST_IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1)
 
 if [ -z "$HOST_IP" ]; then
-    echo "❌ Error: Network IP not found. Please check your WiFi."
+    echo "Error: Network IP not found. Please check your WiFi."
     exit 1
 fi
 
 echo "------------------------------------------------"
-echo "🚀 Atmos Prime - One-Click Setup"
-echo "📡 Network IP: $HOST_IP"
+echo "Atmos Prime - One-Click Setup"
+echo "Network IP: $HOST_IP"
 echo "------------------------------------------------"
 
 # 2. Hard Reset (Clean volumes and old network namespaces)
@@ -70,7 +70,7 @@ EOL
 # 4. Start Deployment
 docker compose up -d --build
 
-echo "⏳ Waiting 25s for services to stabilize..."
+echo "Waiting 25s for services to stabilize..."
 sleep 25
 
 # 5. Initial Data Seed (Prevents empty history brackets [])
@@ -80,7 +80,7 @@ curl -s -X POST http://localhost:8000/primes \
 
 clear
 echo "------------------------------------------------"
-echo "✅ SETUP COMPLETE"
+echo "SETUP COMPLETE"
 echo "------------------------------------------------"
 echo "URL: http://10.13.13.1:8000/history"
 echo "------------------------------------------------"
