@@ -24,12 +24,13 @@ resource "aws_ecs_task_definition" "app_task" {
   container_definitions = jsonencode([
     {
       name      = "prime-service-app"
-      image     = "cfnagib/atmos-prime-service:latest" # Ensure this matches your Docker Hub image
+      image     = "cfnagib/atmos-prime-service:latest" # Matches Docker Hub image
       essential = true
       portMappings = [
         {
-          container_port = 80
-          host_port      = 80
+          # UPDATED: Changed from 80 to 8000 to match the actual FastAPI app port
+          container_port = 8000
+          host_port      = 8000
         }
       ]
       logConfiguration = {
@@ -53,8 +54,11 @@ resource "aws_ecs_service" "main_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = [aws_subnet.private_subnet.id]
+    # UPDATED: Changed from private_subnet to public_subnet to match the new vpc.tf naming
+    subnets          = [aws_subnet.public_subnet.id]
     security_groups  = [aws_security_group.api_sg.id]
-    assign_public_ip = false # Security requirement: No direct public access
+    
+    # Keeping this false as a security best practice for restricted access
+    assign_public_ip = false
   }
 }

@@ -1,7 +1,12 @@
 #!/bin/bash
 
 # 1. Detect Host IP (macOS WiFi en0 or Ethernet en1)
-HOST_IP=$(ipconfig getifaddr en0 || ipconfig getifaddr en1)
+# Checking en0 first (WiFi), then en1 (Ethernet) if empty
+HOST_IP=$(ipconfig getifaddr en0)
+
+if [ -z "$HOST_IP" ]; then
+    HOST_IP=$(ipconfig getifaddr en1)
+fi
 
 if [ -z "$HOST_IP" ]; then
     echo "ERROR: Host IP not detected. Please check your network connection."
@@ -13,7 +18,7 @@ echo "Starting Atmos Prime Service"
 echo "Detected Host IP: $HOST_IP"
 echo "------------------------------------------------"
 
-# 2. Export variables for Docker Compose (This injects the IP without changing the file)
+# 2. Export variables for Docker Compose
 export HOST_IP=$HOST_IP
 export DB_USER=atmos
 export DB_PASSWORD=atmospass
@@ -21,7 +26,6 @@ export DB_NAME=primesdb
 
 # 3. Clean start
 docker compose down --volumes --remove-orphans 2>/dev/null
-# Clean old config only if necessary to ensure fresh VPN keys
 rm -rf ./config/wireguard 
 
 # 4. Launch Stack using the existing docker-compose.yml

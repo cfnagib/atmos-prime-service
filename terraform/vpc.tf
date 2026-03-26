@@ -17,13 +17,14 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-resource "aws_subnet" "private_subnet" {
-  vpc_id     = aws_vpc.main_vpc.id
-  cidr_block = "10.0.1.0/24"
+# UPDATED: Renamed to public_subnet to align with map_public_ip_on_launch = true
+resource "aws_subnet" "public_subnet" {
+  vpc_id                  = aws_vpc.main_vpc.id
+  cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true # Required for ECS Fargate in public subnets to reach ECR/DockerHub
   
   tags = {
-    Name = "${var.project_name}-subnet"
+    Name = "${var.project_name}-public-subnet"
   }
 }
 
@@ -42,7 +43,7 @@ resource "aws_route_table" "public_rt" {
 }
 
 resource "aws_route_table_association" "public_assoc" {
-  subnet_id      = aws_subnet.private_subnet.id
+  subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public_rt.id
 }
 

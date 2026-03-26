@@ -4,8 +4,8 @@
 This guide outlines the professional deployment of the Prime Number Generator service on AWS using **Terraform** (Infrastructure as Code). The architecture is designed with a "Security-First" approach, ensuring the API is isolated from the public internet and only accessible via a secure VPN.
 
 ## Infrastructure Components (AWS)
-- **VPC & Networking**: A dedicated Virtual Private Cloud with a Private Subnet.
-- **Security Groups**: Strict firewall rules allowing inbound traffic only from the VPN IP range (Port 80).
+- **VPC & Networking**: A dedicated Virtual Private Cloud with a Public Subnet (configured for ECR/DockerHub access).
+- **Security Groups**: Strict firewall rules allowing inbound traffic only from the VPN IP range (Port 8000).
 - **AWS ECS (Fargate)**: Serverless container orchestration to run the application without managing EC2 instances.
 - **CloudWatch**: Integrated logging for long-term maintenance and monitoring.
 
