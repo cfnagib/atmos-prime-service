@@ -64,5 +64,4 @@ A strategic **downgrade to Docker Desktop v4.18.0** was implemented to restore t
 * **IaC**: Terraform v1.0.0+
 
 ---
-**Contact**: Christian Nagib  
-**Target Position**: Cloud & Software Engineer
+**Author**: Christian Nagib
