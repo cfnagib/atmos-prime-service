@@ -6,7 +6,8 @@ This repository contains the complete solution for the Cloud & Software Engineer
 As per the technical requirements, the system is designed as a micro-service based application:
 * **Application Service (FastAPI)**: Efficiently generates prime numbers in a user-provided range.
 * **Database (PostgreSQL)**: Records each execution to ensure data persistence and history tracking.
-* **VPN Gateway (WireGuard)**: Provides secure, encrypted access to the services, ensuring no direct public access to the API or Database.
+* **VPN Gateway (WireGuard)**: Provides secure, encrypted access to the services.
+* **Infrastructure as Code (Terraform)**: Complete AWS ECS Fargate deployment scripts are located in the `/terraform` directory.
 
 ## 🚀 Quick Start (Automated Setup)
 To ensure the system is deployed with the correct network configurations and initial data seeding, use the provided automation script:
@@ -20,7 +21,7 @@ To ensure the system is deployed with the correct network configurations and ini
 
 2.  **Connect to VPN**:
     * Scan the generated QR Code in your terminal using the WireGuard app.
-    * Alternatively, use the configuration file generated in `./config/peer1.conf`.
+    * Use the configuration file generated in the console output.
 
 ## 📡 Accessing the Service
 Once the VPN tunnel is established, the HTTP API is accessible via:
@@ -33,38 +34,34 @@ Once the VPN tunnel is established, the HTTP API is accessible via:
 * **GET /history**: Retrieves all execution records from the PostgreSQL database.
 
 ## ☁️ Task 3: Cloud Deployment Guide (AWS Implementation)
-To transition this local setup to a production cloud environment, the following architecture is proposed:
+To transition this local setup to a production cloud environment, I have provided **Terraform (IaC)** scripts in the `/terraform` folder to automate the following architecture:
 
-### 1. Infrastructure Setup
-* **Compute**: Deploy the application on an **AWS EC2** instance (Ubuntu 22.04) or **Amazon ECS** for managed container orchestration.
-* **Database**: Migrate from a local container to **Amazon RDS (PostgreSQL)** for better scalability, automated backups, and high availability.
-* **Networking**: Deploy within a **VPC** with private subnets for the App and Database.
+### 1. Infrastructure Setup (via Terraform)
+* **Compute**: Managed via **AWS ECS (Fargate)** for serverless container orchestration.
+* **Networking**: A dedicated **VPC** with public/private subnets, Internet Gateway, and Route Tables.
+* **Database**: Integration with **Amazon RDS (PostgreSQL)** for production-grade persistence and scalability.
 
 ### 2. Access Control & Security
-* **Security Groups**: 
-    * Allow **UDP 51820** for WireGuard VPN access.
-    * Strictly block all public access to ports **8000** (API) and **5432** (DB).
-* **IAM Permissions**: 
-    * Create a dedicated IAM Role for the EC2 instance with `AmazonRDSFullAccess` (if using RDS) and `CloudWatchLogsFullAccess` for monitoring.
-    * Use **AWS Secrets Manager** to handle database credentials securely.
+* **Security Groups**: Automated rules to allow UDP 51820 (VPN) and restrict API/DB access to internal traffic only.
+* **Secrets Management**: Strategy for using **AWS Secrets Manager** to handle sensitive credentials.
+* **Logging**: Integrated **CloudWatch Logs** for infrastructure monitoring.
 
 ### 3. Deployment Steps
-1. Provision VPC and Subnets using **Terraform** or AWS CLI.
-2. Launch EC2 instance and install Docker/WireGuard.
-3. Deploy the application using the provided `docker-compose.yml`.
-4. Distribute WireGuard peer configurations only to authorized users.
+1. Navigate to the `/terraform` directory.
+2. Initialize and apply the configuration: `terraform init && terraform apply`.
+3. Follow the detailed steps in `DEPLOYMENT_GUIDE.md` for full environment setup.
 
 ## ⚠️ Technical Challenges & Troubleshooting
 During development on **macOS (Apple Silicon M4)**, a networking regression was identified in Docker Desktop (v4.23+). This bug prevented the host from correctly routing traffic to the internal WireGuard gateway IP (`10.13.13.1`).
 
 **Resolution:**
-To maintain a stable environment and ensure full compliance with the VPN connectivity requirements, a strategic **downgrade to Docker Desktop v4.18.0** was implemented. This restored the internal routing layer, confirming the integrity of the microservice communication and the secure VPN tunnel.
+A strategic **downgrade to Docker Desktop v4.18.0** was implemented to restore the internal routing layer, confirming the integrity of the microservice communication and the secure VPN tunnel.
 
 ## 🧪 Technical Stack
 * **Backend**: Python 3.13 (FastAPI)
 * **Database**: PostgreSQL 16
-* **Containerization**: Docker & Docker Compose
 * **Security**: WireGuard VPN
+* **IaC**: Terraform v1.0.0+
 
 ---
 **Contact**: Christian Nagib  
