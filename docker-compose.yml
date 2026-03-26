@@ -4,11 +4,11 @@ services:
     container_name: atmos-db
     restart: always
     environment:
-      - POSTGRES_USER=atmos
-      - POSTGRES_PASSWORD=atmospass
-      - POSTGRES_DB=primesdb
+      - POSTGRES_USER=${DB_USER:-atmos}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-atmospass}
+      - POSTGRES_DB=${DB_NAME:-primesdb}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U atmos -d primesdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-atmos} -d ${DB_NAME:-primesdb}"]
       interval: 5s
       timeout: 5s
       retries: 3
@@ -23,7 +23,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Berlin
-      - SERVERURL=192.168.178.39
+      - SERVERURL=${HOST_IP:-127.0.0.1}
       - SERVERPORT=51820
       - PEERS=1
       - PEERDNS=1.1.1.1
@@ -44,5 +44,5 @@ services:
       db:
         condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql+psycopg://atmos:atmospass@atmos-db:5432/primesdb
+      - DATABASE_URL=postgresql+psycopg://${DB_USER:-atmos}:${DB_PASSWORD:-atmospass}@atmos-db:5432/${DB_NAME:-primesdb}
     restart: always

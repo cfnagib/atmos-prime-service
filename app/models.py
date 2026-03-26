@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, DateTime
-from datetime import datetime
+from datetime import datetime, timezone
 from .database import Base
 
 class PrimeExecution(Base):
@@ -9,4 +9,5 @@ class PrimeExecution(Base):
     range_start = Column(Integer)
     range_end = Column(Integer)
     primes_count = Column(Integer)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    # Using timezone-aware UTC datetime (Best practice for Python 3.12+)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

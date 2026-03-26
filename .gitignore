@@ -45,3 +45,11 @@ Thumbs.db
 
 # Docker Logs
 *.log
+
+# Atmos Project Specific
+config/
+old_scripts_backup/
+*.bak
+*.old_backup
+clean_project_code.txt
+full_project_code.txt
