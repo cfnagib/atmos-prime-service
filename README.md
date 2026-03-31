@@ -92,7 +92,7 @@ Calculates all prime numbers within a given range.
   "execution_id": 1,
   "range": ,
   "count": 25,
-  "primes": [2, 3, 5, 7, ...]
+  "primes": 
 }
 ```
 
