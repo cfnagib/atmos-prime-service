@@ -14,7 +14,6 @@ services:
       retries: 3
 
   vpn:
-    # UPDATED: Using a stable legacy tag to fix macOS Docker routing bugs
     image: lscr.io/linuxserver/wireguard:v1.0.20210914-ls22
     container_name: atmos-vpn
     cap_add:
@@ -31,7 +30,8 @@ services:
       - ALLOWEDIPS=10.13.13.0/24
     ports:
       - "51820:51820/udp"
-      - "8000:8000"
+    # Port 8000:8000 was REMOVED to satisfy security requirements.
+    # The API is now strictly reachable only via the internal WireGuard tunnel.
     volumes:
       - ./config:/config
     restart: always

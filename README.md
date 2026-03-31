@@ -1,67 +1,73 @@
-# ATMOS Case Study: Prime Number Microservice & VPN Infrastructure
+Atmos Space Cargo - Prime Service Case Study
 
-This repository contains the complete solution for the Cloud & Software Engineer case study. The project implements a robust prime number generator, a containerized environment with a secure VPN gateway, and a comprehensive guide for cloud deployment.
+🧪 Tech Stack
 
-## 🏗️ Architecture Overview
-As per the technical requirements, the system is designed as a micro-service based application:
-* **Application Service (FastAPI)**: Efficiently generates prime numbers in a user-provided range.
-* **Database (PostgreSQL)**: Records each execution to ensure data persistence and history tracking.
-* **VPN Gateway (WireGuard)**: Provides secure, encrypted access to the services.
-* **Infrastructure as Code (Terraform)**: Complete AWS ECS Fargate deployment scripts are located in the `/terraform` directory.
+Backend: Python 3.13 / FastAPI
 
-## 🚀 Quick Start (Automated Setup)
-To ensure the system is deployed with the correct network configurations and initial data seeding, use the provided automation script:
+Database: PostgreSQL 16
 
-1.  **Run the deployment script**:
-    ```bash
-    chmod +x auto_update_ip.sh
-    ./auto_update_ip.sh
-    ```
-    *This script dynamically detects the Host IP, updates the WireGuard configuration, starts the Docker stack, and seeds initial data to the database.*
+Security: WireGuard VPN
 
-2.  **Connect to VPN**:
-    * Scan the generated QR Code in your terminal using the WireGuard app.
-    * Use the configuration file generated in the console output.
+IaC: Terraform / AWS ECS Fargate
 
-## 📡 Accessing the Service
-Once the VPN tunnel is established, the HTTP API is accessible via:
-* **Primary VPN URL**: http://10.13.13.1:8000/history
-* **Note on Connectivity**: The system is configured to allow secure inbound communication ONLY from the VPN network.
+🚀 Senior Design Decisions & Architectural Overview
 
-## 🛠️ API Endpoints
-* **POST /primes**: Calculates primes in a given range.
-    * *Payload:* `{"start": 1, "end": 100}`
-* **GET /history**: Retrieves all execution records from the PostgreSQL database.
+This project is designed with a focus on Security, Performance, and Scalability, addressing high-level infrastructure requirements for space logistics operations.
 
-## ☁️ Task 3: Cloud Deployment Guide (AWS Implementation)
-To transition this local setup to a production cloud environment, I have provided **Terraform (IaC)** scripts in the `/terraform` folder to automate the following architecture:
+1. Network Security (The "Zero-Exposure" Strategy)
 
-### 1. Infrastructure Setup (via Terraform)
-* **Compute**: Managed via **AWS ECS (Fargate)** for serverless container orchestration.
-* **Networking**: A dedicated **VPC** with public/private subnets, Internet Gateway, and Route Tables.
-* **Database**: Integration with **Amazon RDS (PostgreSQL)** for production-grade persistence and scalability.
+To meet the strict security constraints, the FastAPI application is deployed with zero exposed ports to the public internet or the host machine.
 
-### 2. Access Control & Security
-* **Security Groups**: Automated rules to allow UDP 51820 (VPN) and restrict API/DB access to internal traffic only.
-* **Secrets Management**: Strategy for using **AWS Secrets Manager** to handle sensitive credentials.
-* **Logging**: Integrated **CloudWatch Logs** for infrastructure monitoring.
+The Choice: I implemented a "Sidecar Network" pattern. By using network_mode: "service:vpn" in Docker, the application is entirely shielded.
 
-### 3. Deployment Steps
-1. Navigate to the `/terraform` directory.
-2. Initialize and apply the configuration: `terraform init && terraform apply`.
-3. Follow the detailed steps in `DEPLOYMENT_GUIDE.md` for full environment setup.
+The Result: The service is invisible to the outside world. Communication is only possible through the encrypted WireGuard tunnel.
 
-## ⚠️ Technical Challenges & Troubleshooting
-During development on **macOS (Apple Silicon M4)**, a networking regression was identified in Docker Desktop (v4.23+). This bug prevented the host from correctly routing traffic to the internal WireGuard gateway IP (`10.13.13.1`).
+2. Algorithmic Excellence (Task 1)
 
-**Resolution:**
-A strategic **downgrade to Docker Desktop v4.18.0** was implemented to restore the internal routing layer, confirming the integrity of the microservice communication and the secure VPN tunnel.
+Instead of a standard trial division loop, I utilized the Sieve of Eratosthenes.
 
-## 🧪 Technical Stack
-* **Backend**: Python 3.13 (FastAPI)
-* **Database**: PostgreSQL 16
-* **Security**: WireGuard VPN
-* **IaC**: Terraform v1.0.0+
+Complexity: O(n log log n)
 
----
-**Author**: Christian Nagib
+Why? For high-load scenarios handling large numerical ranges, this optimization is essential to reduce CPU overhead and ensure sub-second response times.
+
+3. Cloud Infrastructure (Task 3 - AWS/Terraform)
+
+The API is deployed within a dedicated VPC. Access is restricted via Security Groups that permit inbound traffic only from the VPN CIDR range.
+
+ECS Fargate: Selected to eliminate server management overhead (No EC2 patching required).
+
+Security Design: The infrastructure mirrors our local "Zero-Trust" networking model, ensuring that the cloud environment remains as secure as the local development stack.
+
+🛠️ Setup & Execution
+
+1. Local Development (Automated)
+
+I have provided an automation script to handle dynamic IP updates and environment synchronization:
+
+chmod +x auto_update_ip.sh
+./auto_update_ip.sh
+
+
+This script detects your Host IP, updates WireGuard configs, and starts the Docker stack.
+
+2. Connecting to VPN
+
+Once the stack is running, scan the generated QR Code in your terminal using the WireGuard app.
+
+Crucial: Access the API at 10.13.13.1:8000 only after the tunnel is active.
+
+🛠️ API Endpoints
+
+POST /primes: Calculates primes in a range.
+
+Payload: {"start": 1, "end": 100}
+
+GET /history: Retrieves execution records from the PostgreSQL database.
+
+⚠️ Technical Challenges & Troubleshooting
+
+During development on macOS (Apple Silicon M4), a networking regression in Docker Desktop (v4.23+) was identified that affected internal routing to the WireGuard gateway.
+
+Resolution: Implemented a strategic downgrade to Docker Desktop v4.18.0 to verify the integrity of the secure VPN tunnel and microservice communication.
+
+Author: Christian Nagib

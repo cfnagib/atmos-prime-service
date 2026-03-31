@@ -8,63 +8,29 @@ resource "aws_vpc" "main_vpc" {
   }
 }
 
-# 1. Added Internet Gateway (Essential for ECS to pull images)
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main_vpc.id
-
-  tags = {
-    Name = "${var.project_name}-igw"
-  }
 }
 
-# UPDATED: Renamed to public_subnet to align with map_public_ip_on_launch = true
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.main_vpc.id
   cidr_block              = "10.0.1.0/24"
-  map_public_ip_on_launch = true # Required for ECS Fargate in public subnets to reach ECR/DockerHub
-  
-  tags = {
-    Name = "${var.project_name}-public-subnet"
-  }
+  map_public_ip_on_launch = true 
 }
 
-# 2. Added Route Table and Routes
-resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.main_vpc.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
-  }
-
-  tags = {
-    Name = "${var.project_name}-rt"
-  }
-}
-
-resource "aws_route_table_association" "public_assoc" {
-  subnet_id      = aws_subnet.public_subnet.id
-  route_table_id = aws_route_table.public_rt.id
-}
-
-# 3. Security Group updated with correct ports
+# SECURITY DESIGN CHOICE: Restricted Ingress
+# This Security Group acts as a primary firewall. We restrict port 8000 access 
+# strictly to the VPN CIDR range. This prevents external actors from hitting 
+# the API even if they discover the instance IP.
 resource "aws_security_group" "api_sg" {
   name        = "${var.project_name}-api-sg"
   description = "Restricted access to VPN and Application port"
   vpc_id      = aws_vpc.main_vpc.id
 
-  # Allow App port (8000) from VPN range
   ingress {
+    description = "API Access only via VPN Tunnel"
     from_port   = 8000
     to_port     = 8000
-    protocol    = "tcp"
-    cidr_blocks = [var.vpn_cidr_range]
-  }
-
-  # Allow Standard HTTP (80) for Load Balancer
-  ingress {
-    from_port   = 80
-    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = [var.vpn_cidr_range]
   }

@@ -1,50 +1,31 @@
 #!/bin/bash
 
-# 1. Detect Host IP (macOS WiFi en0 or Ethernet en1)
-# Checking en0 first (WiFi), then en1 (Ethernet) if empty
-HOST_IP=$(ipconfig getifaddr en0)
-
-if [ -z "$HOST_IP" ]; then
-    HOST_IP=$(ipconfig getifaddr en1)
+# 1. Detect Host IP Address (macOS/Linux compatible)
+# This ensures the WireGuard endpoint always points to the current machine's IP.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    HOST_IP=$(ipconfig getifaddr en0)
+else
+    HOST_IP=$(hostname -I | awk '{print $1}')
 fi
 
-if [ -z "$HOST_IP" ]; then
-    echo "ERROR: Host IP not detected. Please check your network connection."
-    exit 1
-fi
-
-echo "------------------------------------------------"
-echo "Starting Atmos Prime Service"
 echo "Detected Host IP: $HOST_IP"
-echo "------------------------------------------------"
-
-# 2. Export variables for Docker Compose
 export HOST_IP=$HOST_IP
-export DB_USER=atmos
-export DB_PASSWORD=atmospass
-export DB_NAME=primesdb
 
-# 3. Clean start
-docker compose down --volumes --remove-orphans 2>/dev/null
-rm -rf ./config/wireguard 
+# 2. Update WireGuard Configuration
+# DESIGN CHOICE: Automating the endpoint update to ensure seamless VPN connectivity
+# without manual modification of the wg0.conf file.
+sed -i '' "s/Endpoint = .*:51820/Endpoint = $HOST_IP:51820/" config/wg0.conf 2>/dev/null || \
+sed -i "s/Endpoint = .*:51820/Endpoint = $HOST_IP:51820/" config/wg0.conf
 
-# 4. Launch Stack using the existing docker-compose.yml
-docker compose up -d --build
+# 3. Start Services (Docker Stack)
+# Restarting services to apply new network environment variables and secure the stack.
+docker-compose down
+docker-compose up -d
 
 echo "------------------------------------------------"
-echo "Services are initializing (Wait 30s)..."
-echo "------------------------------------------------"
-sleep 30
-
-# 5. Initialize Database with first record (Optional Seeding)
-curl -s -X POST http://localhost:8000/primes \
-     -H 'Content-Type: application/json' \
-     -d '{"start": 1, "end": 50}' > /dev/null
-
-echo "SUCCESS: Project is live."
-echo "VPN Access: http://10.13.13.1:8000/history"
-echo "Local Access: http://localhost:8000/history"
+echo "Deployment Complete. Access API at 10.13.13.1:8000 via VPN."
 echo "------------------------------------------------"
 
-# 6. Show VPN QR Code
+# 4. Display VPN QR Code
+# Providing the QR code directly in the terminal for quick mobile client setup.
 docker exec -it atmos-vpn /app/show-peer 1
