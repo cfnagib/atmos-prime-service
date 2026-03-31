@@ -90,7 +90,7 @@ Calculates all prime numbers within a given range.
 {
   "status": "success",
   "execution_id": 1,
-  "range": ,
+  "range": [1, 100],
   "count": 25,
   "primes": 
 }
